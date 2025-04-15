@@ -1,33 +1,23 @@
-const { google } = require("googleapis");
-const sheets = google.sheets("v4");
-const credentials = require("../../credentials.json"); // Adjust path based on where your JSON is
-
 module.exports = async (req, res) => {
+  // Enable CORS
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  if (req.method === "OPTIONS") return res.status(200).end();
+
+  if (req.method === "OPTIONS") {
+    res.status(200).end();
+    return;
+  }
 
   const { email, message } = req.body;
 
-  const auth = new google.auth.GoogleAuth({
-    credentials,
-    scopes: ["https://www.googleapis.com/auth/spreadsheets"]
-  });
+  // Load credentials from environment variable
+  const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
 
-  const authClient = await auth.getClient();
+  // TODO: Use credentials to authenticate with Google Sheets
+  // (I'll help you with that if needed)
 
-  const spreadsheetId = "1oap_K_Vh0_VyxbbqfDmtupI45Z1eRJgqGcK0sQUfNhI"; // your Sheet ID
-  const range = "Sheet1!A:B"; // change as needed
-
-  await sheets.spreadsheets.values.append({
-    auth: authClient,
-    spreadsheetId,
-    range,
-    valueInputOption: "RAW",
-    requestBody: {
-      values: [[email, message]]
-    }
-  });
+  console.log("📩 Email:", email);
+  console.log("📨 Message:", message);
 
   res.status(200).json({ success: true });
 };
