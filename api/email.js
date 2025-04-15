@@ -22,22 +22,21 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, error: "Missing fields" });
     }
 
-    const privateKey = process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n');
-    const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
-    const spreadsheetId = "1oap_K_Vh0_VyxbbqfDmtupI45Z1eRJgqGcK0sQUfNhI";
+    // ✅ Parse service account JSON from environment variable
+    const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT);
 
     const auth = new google.auth.JWT(
-      clientEmail,
+      serviceAccount.client_email,
       null,
-      privateKey,
+      serviceAccount.private_key,
       ["https://www.googleapis.com/auth/spreadsheets"]
     );
 
     const sheets = google.sheets({ version: "v4", auth });
 
     await sheets.spreadsheets.values.append({
-      spreadsheetId,
-      range: "Sheet1!A:B", // Use your actual sheet name
+      spreadsheetId: "1oap_K_Vh0_VyxbbqfDmtupI45Z1eRJgqGcK0sQUfNhI",
+      range: "Sheet1!A:B", // adjust as needed
       valueInputOption: "RAW",
       requestBody: {
         values: [[email, message]],
