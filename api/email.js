@@ -1,32 +1,33 @@
-export default async function handler(req, res) {
-  // ✅ Enable CORS headers
+const { google } = require("googleapis");
+const sheets = google.sheets("v4");
+const credentials = require("../../credentials.json"); // Adjust path based on where your JSON is
+
+module.exports = async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  if (req.method === "OPTIONS") return res.status(200).end();
 
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
+  const { email, message } = req.body;
 
-  if (req.method !== "POST") {
-    return res.status(405).json({ success: false, message: "Method Not Allowed" });
-  }
+  const auth = new google.auth.GoogleAuth({
+    credentials,
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"]
+  });
 
-  try {
-    const { email, message } = req.body;
+  const authClient = await auth.getClient();
 
-    if (!email || !message) {
-      return res.status(400).json({ success: false, message: "Missing fields" });
+  const spreadsheetId = "1oap_K_Vh0_VyxbbqfDmtupI45Z1eRJgqGcK0sQUfNhI"; // your Sheet ID
+  const range = "Sheet1!A:B"; // change as needed
+
+  await sheets.spreadsheets.values.append({
+    auth: authClient,
+    spreadsheetId,
+    range,
+    valueInputOption: "RAW",
+    requestBody: {
+      values: [[email, message]]
     }
+  });
 
-    console.log("📩 Email:", email);
-    console.log("📨 Message:", message);
-
-    // You can add your email sending logic here with EmailJS, Nodemailer, etc.
-
-    return res.status(200).json({ success: true, message: "Message received!" });
-  } catch (err) {
-    console.error("❌ Error:", err);
-    return res.status(500).json({ success: false, message: "Server error" });
-  }
-}
+  res.status(200).json({ success: true });
+};
