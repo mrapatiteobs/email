@@ -34,12 +34,16 @@ export default async function handler(req, res) {
 
     const sheets = google.sheets({ version: "v4", auth });
 
+    // ✅ Generate ISO timestamp
+    const timestamp = new Date().toISOString(); // e.g., 2025-04-15T12:34:56.789Z
+
+    // ✅ Append email, message, and timestamp to the sheet
     await sheets.spreadsheets.values.append({
       spreadsheetId: "1oap_K_Vh0_VyxbbqfDmtupI45Z1eRJgqGcK0sQUfNhI",
-      range: "Sheet1!A:B", // adjust as needed
+      range: "Sheet1!A:C", // updated to include 3 columns
       valueInputOption: "RAW",
       requestBody: {
-        values: [[email, message]],
+        values: [[email, message, timestamp]],
       },
     });
 
